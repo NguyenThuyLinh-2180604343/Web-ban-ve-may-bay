@@ -1,8 +1,9 @@
 <?php include 'database/db.php'; ?>
 <?php
 session_start();
+// Nếu chưa đăng nhập, chuyển hướng sang trang đăng nhập (vd: login.php)
 if (!isset($_SESSION['username'])) {
-    header("Location: index.php");
+    header("Location: login.php");
     exit;
 }
 ?>
@@ -13,114 +14,69 @@ if (!isset($_SESSION['username'])) {
 <body>
     <section class="home" id="home">
 
-    <div class="content">
-        <h3>adventure is worthwhile</h3>
-        <p>dicover new places with us, adventure awaits</p>
-        <a href="#" class="btn">discover more</a>
-    </div>
+        <!-- Bỏ phần content giới thiệu -->
 
-    <div class="controls">
-        <span class="vid-btn active" data-src="image/B95AFAA3-B1F5-4C6F-AC8D-A558F9FCF859.jpeg"></span>
-        <span class="vid-btn" data-src="images/vid-2.mp4"></span>
-        <span class="vid-btn" data-src="images/vid-3.mp4"></span>
-        <span class="vid-btn" data-src="images/vid-4.mp4"></span>
-        <span class="vid-btn" data-src="images/vid-5.mp4"></span>
-    </div>
+        <!-- Slider ảnh tự động chuyển đổi, kích thước vừa phải khớp với trang -->
+        <div class="image-slider" style="position:relative; width:100%; max-width:1200px; height:600px; margin:0 auto; overflow:hidden;">
+            <img src="image/B95AFAA3-B1F5-4C6F-AC8D-A558F9FCF859.jpeg" alt="Slide 1" class="slide-img" style="width:100%; height:600px; object-fit:cover; display:block; border-radius:16px;">
+        </div>
+        <script>
+            // Slider ảnh tự động chuyển đổi, không có nút điều khiển
+            const slides = document.querySelectorAll('.slide-img');
+            let current = 0;
+            function showSlide(idx) {
+                slides.forEach((img, i) => {
+                    img.style.display = i === idx ? 'block' : 'none';
+                });
+                current = idx;
+            }
+            setInterval(() => {
+                showSlide((current + 1) % slides.length);
+            }, 3500);
+            showSlide(0);
+        </script>
+    </section>
 
-    <div class="video-container">
-        <video src="images/vid-1.mp4" id="video-slider" loop autoplay muted></video>
-    </div>
+    <section class="book" id="book">
 
-</section>
+        <h1 class="heading" style="background:#e3f2fd; color:#222; letter-spacing:2px; font-size:2.2em; text-align:center; margin-bottom:24px; border-radius:10px; padding:12px 0;">
+            <span style="color:#222; background:none;">b</span>
+            <span style="color:#222; background:none;">o</span>
+            <span style="color:#222; background:none;">o</span>
+            <span style="color:#222; background:none;">k</span>
+            <span class="space" style="background:none;"></span>
+            <span style="color:#222; background:none;">n</span>
+            <span style="color:#222; background:none;">o</span>
+            <span style="color:#222; background:none;">w</span>
+        </h1>
 
-<section class="book" id="book">
+        <div class="row" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:40px;">
+            <div class="image" style="flex:1 1 360px; min-width:300px; max-width:360px; text-align:center; display:flex; align-items:center; justify-content:center; height:320px;">
+                <img src="image/1605158418719.jpg" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            </div>
 
-    <h1 class="heading">
-        <span>b</span>
-        <span>o</span>
-        <span>o</span>
-        <span>k</span>
-        <span class="space"></span>
-        <span>n</span>
-        <span>o</span>
-        <span>w</span>
-    </h1>
-
-    <div class="row">
-
-        <div class="image">
-            <img src="images/book-img.svg" alt="">
+            <form action="showticket.php" method="get" style="flex:1 1 420px; min-width:320px; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.07); padding:36px 32px; display:flex; flex-direction:column; gap:32px; font-size:1.55em;">
+                <div style="display:flex; gap:18px;">
+                    <div class="inputBox" style="flex:1;">
+                        <h3 style="color:#222; font-size:1.22em; margin-bottom:12px;">From</h3>
+                        <input type="text" name="diem_di" placeholder="Enter departure" style="padding:16px 20px; border:1px solid #ccc; border-radius:6px; font-size:1.08em; color:#222; width:100%;">
+                    </div>
+                    <div class="inputBox" style="flex:1;">
+                        <h3 style="color:#222; font-size:1.22em; margin-bottom:12px;">To</h3>
+                        <input type="text" name="diem_den" placeholder="Enter destination" style="padding:16px 20px; border:1px solid #ccc; border-radius:6px; font-size:1.08em; color:#222; width:100%;">
+                    </div>
+                </div>
+                <div class="inputBox" style="margin-bottom:0;">
+                    <h3 style="color:#222; font-size:1.22em; margin-bottom:12px;">Departure date</h3>
+                    <input type="date" name="ngay_di" style="padding:16px 20px; border:1px solid #ccc; border-radius:6px; font-size:1.08em; color:#222; width:100%;">
+                </div>
+                <input type="submit" class="btn" value="Search flights" style="background:#0077cc; color:#fff; border:none; border-radius:6px; padding:18px 0; font-size:1.18em; font-weight:bold; cursor:pointer; margin-top:10px;">
+            </form>
         </div>
 
-      <form action="showticket.php" method="get">
-    <div class="inputBox">
-        <h3>Điểm đi</h3>
-        <input type="text" name="diem_di" placeholder="place name">
-    </div>
-    <div class="inputBox">
-        <h3>Điểm đến</h3>
-        <input type="text" name="diem_den" placeholder="place name">
-    </div>
-    <div class="inputBox">
-        <h3>Ngày đi</h3>
-        <input type="date" name="ngay_di">
-    </div>
-    
-    <input type="submit" class="btn" value="Tìm chuyến bay">
-</form>
+    </section>
 
-    </div>
 
-</section>
-    <?php if (isset($_SESSION['username'])): ?>
-    <p>👋 Xin chào, <strong><?= $_SESSION['username'] ?></strong> | <a href="logout.php">Đăng xuất</a></p>
-    <?php endif; 
-?>
-    <h2>📋 Danh sách chuyến bay</h2>
-    <form method="get">
-    🔍 Tìm kiếm: 
-    <input type="text" name="keyword" value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>" placeholder="Mã CB, điểm đi, hãng...">
-    <button type="submit">Tìm</button>
-</form>
-<br>
+    <?php include 'flooter.php'; ?>
 
-     <a href="admin/sanphamadmin.php" class="btn">➕ admin</a>
-    <br><br>
-    <table>
-        <tr>
-            <th>Mã CB</th><th>Điểm đi</th><th>Điểm đến</th><th>Giờ đi</th><th>Giờ đến</th>
-            <th>Hãng</th><th>Loại</th><th>Giá</th><th>Hành động</th>
-        </tr>
-        <?php
-        $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
-if ($keyword !== '') {
-    $keyword = $conn->real_escape_string($keyword);
-    $sql = "SELECT * FROM chuyen_bay 
-            WHERE ma_cb LIKE '%$keyword%' 
-            OR diem_di LIKE '%$keyword%' 
-            OR diem_den LIKE '%$keyword%'
-            OR hang_hang_khong LIKE '%$keyword%'";
-} else {
-    $sql = "SELECT * FROM chuyen_bay";
-}
-$result = $conn->query($sql);
-
-        while ($row = $result->fetch_assoc()):
-        ?>
-        <tr>
-            <td><?= $row['ma_cb'] ?></td>
-            <td><?= $row['diem_di'] ?></td>
-            <td><?= $row['diem_den'] ?></td>
-            <td><?= $row['gio_di'] ?></td>
-            <td><?= $row['gio_den'] ?></td>
-            <td><?= $row['hang_hang_khong'] ?></td>
-            <td><?= $row['loai_may_bay'] ?></td>
-            <td><?= number_format($row['gia'], 0, ',', '.') ?> đ</td>
-            <td><a href="chitiet.php?id=<?= $row['id'] ?>" class="btn">🔍</a></td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
-</body>
-
-<?php include 'flooter.php'; ?>
-</html>
+    </html>

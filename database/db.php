@@ -33,7 +33,6 @@ $conn->query("CREATE TABLE IF NOT EXISTS chuyen_bay (
 )");
 
 
-// Tạo bảng ve nếu chưa có
 $conn->query("CREATE TABLE IF NOT EXISTS ve (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ten_nguoi_dat VARCHAR(100),
@@ -45,18 +44,21 @@ $conn->query("CREATE TABLE IF NOT EXISTS ve (
     email VARCHAR(100),
     cccd VARCHAR(20),
     FOREIGN KEY (chuyen_bay_id) REFERENCES chuyen_bay(id)
-
 )");
 
+// Thêm đoạn kiểm tra cột created_at trước khi thêm
+$result = $conn->query("SHOW COLUMNS FROM ve LIKE 'created_at'");
+if ($result->num_rows == 0) {
+    $conn->query("ALTER TABLE ve ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+}
 
 
+// Tạo bảng users nếu chưa có
 // Tạo bảng users nếu chưa có
 $conn->query("CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
     password VARCHAR(255),
-    role VARCHAR(20) DEFAULT 'user', -- Thêm role, mặc định là 'user'
+    role VARCHAR(20) DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )");
-
-?>

@@ -1,9 +1,12 @@
 <?php
+
 require 'vendor/autoload.php';
+
 use Aws\Sns\SnsClient;
+
 include 'db.php';
 
-$cb_id = $_GET['id'];
+$cb_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $cb = $conn->query("SELECT * FROM chuyen_bay WHERE id = $cb_id")->fetch_assoc();
 
 // Lấy danh sách ghế đã đặt
@@ -12,8 +15,9 @@ $result = $conn->query("SELECT ghe_so FROM ve WHERE chuyen_bay_id = $cb_id");
 while ($row = $result->fetch_assoc()) {
     $ghe_da_dat[] = $row['ghe_so'];
 }
-// xử lý đặt vé 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+// Xử lý đặt vé
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['ten']) && isset($_POST['ghe_so'])) {
     $ten = $_POST['ten'];
     $ghe = $_POST['ghe_so'];
 
@@ -25,37 +29,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("sis", $ten, $cb_id, $ghe);
         $stmt->execute();
 
-$snsClient = new SnsClient([
-    'region' => 'ap-southeast-1',
-    'version' => 'latest',
-    'credentials' => [
-        'key' => 'AKIA6AOVVROIZDQSWIPL', // 🔒 Thay bằng Access Key thật
-        'secret' => '7NgtllDlzwF899a6DD1x40FpE14i01mBeLsb51tZ' // 🔒 Thay bằng Secret Key thật
-    ]
-]);
+        $snsClient = new SnsClient([
+            'region' => 'ap-southeast-1',
+            'version' => 'latest',
+            'credentials' => [
+                // Nhập Access Key và Secret Key AWS SNS tại đây
+                // 'key' => 'YOUR_AWS_ACCESS_KEY',
+                // 'secret' => 'YOUR_AWS_SECRET_KEY'
+            ]
+        ]);
 
-$message = "📩 Khách hàng $ten vừa đặt vé chuyến {$cb['ma_cb']} từ {$cb['diem_di']} đến {$cb['diem_den']} – Ghế: $ghe.";
+        $message = "📩 Khách hàng $ten vừa đặt vé chuyến {$cb['ma_cb']} từ {$cb['diem_di']} đến {$cb['diem_den']} – Ghế: $ghe.";
 
-try {
-    $snsClient->publish([
-        'TopicArn' => 'arn:aws:sns:ap-southeast-1:963057650577:dat-ve-thanh-cong', // Thay ARN thật
-        'Message' => $message
-    ]);
-} catch (Exception $e) {
-    error_log("❌ SNS lỗi: " . $e->getMessage());
-}
+        try {
+            $snsClient->publish([
+                // Nhập ARN topic SNS thật tại đây
+                // 'TopicArn' => 'arn:aws:sns:ap-southeast-1:YOUR_ACCOUNT_ID:YOUR_TOPIC_NAME',
+                'TopicArn' => '', // <-- Thay ARN thật ở đây
+                'Message' => $message
+            ]);
+        } catch (Exception $e) {
+            error_log("❌ SNS lỗi: " . $e->getMessage());
+        }
 
         echo "<p style='color:green'>✅ Đặt vé thành công! Ghế: $ghe</p>";
         // Cập nhật lại danh sách ghế
         $ghe_da_dat[] = $ghe;
     }
 }
+
+// Xử lý thanh toán vé
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['thanh_toan']) && isset($_POST['ma_ve'])) {
+    $ma_ve = (int)$_POST['ma_ve'];
+    // TODO: Xử lý thanh toán ở đây
+    echo "<p style='color:blue'>💳 Đã nhận yêu cầu thanh toán cho mã vé: $ma_ve</p>";
+}
 ?>
 
-<h3>✈️ Đặt vé chuyến <?= $cb['ma_cb'] ?> (<?= $cb['diem_di'] ?> → <?= $cb['diem_den'] ?>)</h3>
+<h3>✈️ Đặt vé chuyến <?= htmlspecialchars($cb['ma_cb']) ?> (<?= htmlspecialchars($cb['diem_di']) ?> → <?= htmlspecialchars($cb['diem_den']) ?>)</h3>
 <form method="post">
     Họ tên: <input type="text" name="ten" required><br>
-    Chọn ghế: 
+    Chọn ghế:
     <select name="ghe_so" required>
         <?php
         $tong_ghe = $cb['tong_ghe'];
@@ -67,11 +81,12 @@ try {
         ?>
     </select><br>
     <button type="submit">Xác nhận</button>
-    <h3>💳 Thanh toán vé</h3>
+</form>
+
+<h3>💳 Thanh toán vé</h3>
 <form method="post">
     Nhập mã vé: <input type="number" name="ma_ve" required>
     <button type="submit" name="thanh_toan">Thanh toán</button>
 </form>
 
-</form>
-<a href="index.php">← Quay lại</a>
+<a href="index.php">← Quay về trang chủ</a>

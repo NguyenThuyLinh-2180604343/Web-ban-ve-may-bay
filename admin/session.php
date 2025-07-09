@@ -15,9 +15,9 @@ function checkLogin()
 function checkAdmin()
 {
     checkLogin(); // Kiểm tra đăng nhập trước
-    if ($_SESSION["role"] !== "admin") {
-        header("Location: unauthorized.php");
-        exit();
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        header('Location: ../index.php');
+        exit;
     }
 }
 
@@ -29,4 +29,3 @@ function setSession($user)
     $_SESSION["role"] = $user["role"];
     $_SESSION["user"] = $user; // Thêm dòng này để lưu toàn bộ thông tin người dùng
 }
-?>

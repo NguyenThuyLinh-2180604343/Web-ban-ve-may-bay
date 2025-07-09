@@ -20,8 +20,15 @@ if ($result->num_rows === 0) {
 $row = $result->fetch_assoc();
 
 $ghe_da_dat = [];
+$ghe_da_thanh_toan = [];
+// Ghế đã thanh toán
 $r = $conn->query("SELECT ghe_so FROM ve WHERE chuyen_bay_id = $id AND trang_thai_thanh_toan = 1");
 while ($g = $r->fetch_assoc()) {
+    $ghe_da_thanh_toan[] = $g['ghe_so'];
+}
+// Ghế đã đặt nhưng chưa thanh toán
+$r2 = $conn->query("SELECT ghe_so FROM ve WHERE chuyen_bay_id = $id AND trang_thai_thanh_toan = 0");
+while ($g = $r2->fetch_assoc()) {
     $ghe_da_dat[] = $g['ghe_so'];
 }
 
@@ -45,23 +52,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ten']) && isset($_POS
     $sdt = $_POST['sdt'] ?? '';
     $email = $_POST['email'] ?? '';
     $cccd = $_POST['cccd'] ?? '';
-    $ghe = $_POST['ghe_so'];
+    $ghe_list = explode(',', $_POST['ghe_so']);
     $_SESSION['ten_nguoi_dung'] = $ten;
 
-    if (in_array($ghe, $ghe_da_dat)) {
-        $thongbao = "<i class='fas fa-times-circle'></i> Ghế $ghe đã được thanh toán và không thể đặt lại!";
-    } else {
-        $stmt = $conn->prepare("INSERT INTO ve (ten_nguoi_dat, chuyen_bay_id, ghe_so, danh_xung, sdt, email, cccd) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sisssss", $ten, $id, $ghe, $danh_xung, $sdt, $email, $cccd);
-        $stmt->execute();
-        $ma_dat_ve = $stmt->insert_id;
-        $thongbao = "<strong style='color:green;'><i class='fas fa-check-circle'></i> Đặt vé thành công!</strong><br><ul>
-        <li><strong>Hành khách:</strong> $danh_xung $ten</li>
-        <li><strong>Ghế:</strong> $ghe</li>
-        <li><strong>SĐT:</strong> $sdt</li>
-        <li><strong>Email:</strong> $email</li>
-        <li><strong>CCCD:</strong> $cccd</li>
-        <li><strong>Mã vé:</strong> <span style='color:blue;'>$ma_dat_ve</span></li></ul>";
+    $success = [];
+    $failed = [];
+    foreach ($ghe_list as $ghe) {
+        $ghe = trim($ghe);
+        if ($ghe === '') continue;
+        if (in_array($ghe, $ghe_da_dat)) {
+            $failed[] = $ghe;
+        } else {
+            $stmt = $conn->prepare("INSERT INTO ve (ten_nguoi_dat, chuyen_bay_id, ghe_so, danh_xung, sdt, email, cccd) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sisssss", $ten, $id, $ghe, $danh_xung, $sdt, $email, $cccd);
+            $stmt->execute();
+            $ma_dat_ve = $stmt->insert_id;
+            $success[] = ['ghe' => $ghe, 'ma' => $ma_dat_ve];
+        }
+    }
+
+    $thongbao = '';
+    if ($success) {
+        $thongbao .= "<strong style='color:green;'><i class='fas fa-check-circle'></i> Đặt vé thành công cho các ghế:</strong><ul>";
+        foreach ($success as $item) {
+            $thongbao .= "<li><strong>Ghế:</strong> {$item['ghe']} - <strong>Mã vé:</strong> <span style='color:blue;'>{$item['ma']}</span></li>";
+        }
+        $thongbao .= "</ul>";
+    }
+    if ($failed) {
+        $thongbao .= "<div style='color:red;'><i class='fas fa-times-circle'></i> Các ghế đã được đặt hoặc thanh toán: " . implode(', ', $failed) . "</div>";
     }
 }
 
@@ -91,9 +110,7 @@ if (isset($_POST['xoa_ve'])) {
             <div class='notification' style='color: #c62828; background: #fdecea; border-left: 6px solid #c62828; padding:10px; margin:10px 0;'>
                 <i class='fas fa-exclamation-circle'></i> Không thể xóa vé mã <strong>$ma_ve</strong> vì đã thanh toán hoặc không tồn tại.
             </div>";
-
         }
-        
     }
 }
 
@@ -120,76 +137,121 @@ if (isset($_POST['huy_ve'])) {
 }
 $conn->query("DELETE FROM ve 
               WHERE trang_thai_thanh_toan = 0 
-              AND created_at <= NOW() - INTERVAL 1 MINUTE");
+              AND created_at <= NOW() - INTERVAL 15 MINUTE");
 
 ?>
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Chi tiết chuyến bay</title>
-   <!-- Font Awesome 6 -->
+    <!-- Font Awesome 6 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
     <style>
         .flight-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px 20px;
-    margin-top: 15px;
-    margin-bottom: 20px;
-}
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px 20px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
 
-.flight-grid .item {
-    padding: 8px 12px;
-    background: #f9f9f9;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 15px;
-}
+        .flight-grid .item {
+            padding: 8px 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+        }
 
         body {
             font-family: 'Roboto', sans-serif;
-            background:rgb(204, 218, 240);
+            background: rgb(204, 218, 240);
             margin: 0;
             padding: 20px;
             color: #333;
         }
-        h2, h3 { color:rgb(3, 60, 100); }
+
+        h2,
+        h3 {
+            color: rgb(3, 60, 100);
+        }
+
         .container {
             max-width: 900px;
             margin: auto;
             background: white;
             padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 12px;
         }
-        ul { list-style: none; padding: 0; }
-        ul li { padding: 6px 0; }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            padding: 6px 0;
+        }
 
         .seat {
-            display: inline-block;
-            width: 40px; height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 48px;
             margin: 6px;
-            text-align: center;
-            line-height: 40px;
-            background:rgb(192, 199, 195);
+            background: rgb(192, 199, 195);
             border-radius: 6px;
             cursor: pointer;
             transition: 0.3s;
             font-weight: bold;
+            position: relative;
+            font-size: 15px;
         }
 
-        .seat:hover { background: #aaa; }
-        .seat.booked { background: #999; cursor: not-allowed; color: #fff; }
-        .seat.selected { background: #ff9800; color: white; }
+        .seat i.fa-chair {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .seat-label {
+            font-size: 11px;
+            color: #222;
+            opacity: 0.8;
+            line-height: 1;
+        }
+
+        .seat.booked {
+            background: #ffd600;
+            /* vàng */
+            cursor: not-allowed;
+            color: #333;
+        }
+
+        .seat.paid {
+            background: #e53935;
+            /* đỏ */
+            cursor: not-allowed;
+            color: #fff;
+        }
+
+        .seat.selected {
+            background: #4caf50;
+            /* xanh lá */
+            color: white;
+        }
 
         button {
-            background:rgb(56, 135, 220);
+            background: rgb(56, 135, 220);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -198,7 +260,9 @@ $conn->query("DELETE FROM ve
             margin-top: 10px;
         }
 
-        button:hover { background: #0056b3; }
+        button:hover {
+            background: #0056b3;
+        }
 
         table {
             border-collapse: collapse;
@@ -206,13 +270,16 @@ $conn->query("DELETE FROM ve
             margin-top: 20px;
         }
 
-        table td, table th {
+        table td,
+        table th {
             border: 1px solid #ccc;
             padding: 10px;
             text-align: center;
         }
 
-        table th { background: #f0f0f0; }
+        table th {
+            background: #f0f0f0;
+        }
 
         a {
             text-decoration: none;
@@ -220,9 +287,13 @@ $conn->query("DELETE FROM ve
             margin-left: 10px;
         }
 
-        a:hover { text-decoration: underline; }
+        a:hover {
+            text-decoration: underline;
+        }
 
-        form.inline { display: inline; }
+        form.inline {
+            display: inline;
+        }
 
         .notification {
             background: #e6f4ea;
@@ -232,145 +303,184 @@ $conn->query("DELETE FROM ve
             border-radius: 6px;
             margin-bottom: 15px;
         }
+
         .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
-}
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
         .form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-}
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
 
         .form-group label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
         .form-group input,
         .form-group select {
-    padding: 6px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    min-width: 160px;
-}
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 160px;
+        }
 
-        
+        .seats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px 12px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <div class="flight-card">
-        <h2><i class="fas fa-plane-departure"></i> Chi tiết chuyến bay: <span><?= $row['ma_cb'] ?></span></h2>
-        
-        <div class="flight-grid">
-            <div class="item"><i class="fas fa-map-marker-alt"></i> <strong>Điểm đi:</strong>&nbsp;<?= $row['diem_di'] ?></div>
-            <div class="item"><i class="fas fa-bullseye"></i> <strong>Điểm đến:</strong>&nbsp;<?= $row['diem_den'] ?></div>
-            <div class="item"><i class="fas fa-clock"></i> <strong>Giờ đi:</strong>&nbsp;<?= $row['gio_di'] ?></div>
-            <div class="item"><i class="fas fa-hourglass-end"></i> <strong>Giờ đến:</strong>&nbsp;<?= $row['gio_den'] ?></div>
-            <div class="item"><i class="fas fa-building"></i> <strong>Hãng hàng không:</strong>&nbsp;<?= $row['hang_hang_khong'] ?></div>
-            <div class="item"><i class="fas fa-plane"></i> <strong>Loại máy bay:</strong>&nbsp;<?= $row['loai_may_bay'] ?></div>
-            <div class="item"><i class="fas fa-sack-dollar"></i> <strong>Giá vé:</strong>&nbsp;<?= number_format($row['gia'], 0, ',', '.') ?> đ</div>
-        </div>
+    <div class="container">
+        <div class="flight-card">
+            <h2><i class="fas fa-plane-departure"></i> Chi tiết chuyến bay: <span><?= $row['ma_cb'] ?></span></h2>
 
-        <?php if(isset($thongbao)) echo "<div class='notification'>$thongbao</div>"; ?>
+            <div class="flight-grid">
+                <div class="item"><i class="fas fa-map-marker-alt"></i> <strong>Điểm đi:</strong>&nbsp;<?= $row['diem_di'] ?></div>
+                <div class="item"><i class="fas fa-bullseye"></i> <strong>Điểm đến:</strong>&nbsp;<?= $row['diem_den'] ?></div>
+                <div class="item"><i class="fas fa-clock"></i> <strong>Giờ đi:</strong>&nbsp;<?= $row['gio_di'] ?></div>
+                <div class="item"><i class="fas fa-hourglass-end"></i> <strong>Giờ đến:</strong>&nbsp;<?= $row['gio_den'] ?></div>
+                <div class="item"><i class="fas fa-building"></i> <strong>Hãng hàng không:</strong>&nbsp;<?= $row['hang_hang_khong'] ?></div>
+                <div class="item"><i class="fas fa-plane"></i> <strong>Loại máy bay:</strong>&nbsp;<?= $row['loai_may_bay'] ?></div>
+                <div class="item"><i class="fas fa-sack-dollar"></i> <strong>Giá vé:</strong>&nbsp;<?= number_format($row['gia'], 0, ',', '.') ?> đ</div>
+            </div>
 
-    
-<h3><i class="fas fa-chair"></i> Chọn ghế & đặt vé</h3>
-<form method="post" id="bookingForm">
-    <div class="form-row">
-        <div class="form-group">
-            <label>Danh xưng:</label>
-            <select name="danh_xung" required>
-                <option value="">-- Chọn --</option>
-                <option value="Anh">Anh</option>
-                <option value="Chị">Chị</option>
-                <option value="Ông">Ông</option>
-                <option value="Bà">Bà</option>
-            </select>
-        </div>
+            <?php if (isset($thongbao)) echo "<div class='notification'>$thongbao</div>"; ?>
 
-        <div class="form-group">
-            <label>Họ tên:</label>
-            <input type="text" name="ten" required>
-        </div>
 
-        <div class="form-group">
-            <label>Số điện thoại:</label>
-            <input type="text" name="sdt" required>
-        </div>
+            <h3><i class="fas fa-chair"></i> Chọn ghế & đặt vé</h3>
+            <form method="post" id="bookingForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Danh xưng:</label>
+                        <select name="danh_xung" required>
+                            <option value="">-- Chọn --</option>
+                            <option value="Anh">Anh</option>
+                            <option value="Chị">Chị</option>
+                            <option value="Ông">Ông</option>
+                            <option value="Bà">Bà</option>
+                        </select>
+                    </div>
 
-        <div class="form-group">
-            <label>Email:</label>
-            <input type="email" name="email" required>
-        </div>
+                    <div class="form-group">
+                        <label>Họ tên:</label>
+                        <input type="text" name="ten" required>
+                    </div>
 
-        <div class="form-group">
-            <label>CCCD:</label>
-            <input type="text" name="cccd" required>
-        </div>
-    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại:</label>
+                        <input type="text" name="sdt" required>
+                    </div>
 
-    <input type="hidden" name="ghe_so" id="ghe_so_hidden">
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" name="email" required>
+                    </div>
 
-    <br>
-    <div id="seats">
-        <?php
-        $rows = ['A','B','C','D','E','F'];
-        $cols = 6;
-        foreach ($rows as $r) {
-            echo "<div>";
-            for ($i = 1; $i <= $cols; $i++) {
-                $seat = $r . $i;
-                $booked = in_array($seat, $ghe_da_dat);
-                $class = $booked ? 'seat booked' : 'seat';
-                echo "<div class='$class' data-seat='$seat'>" . $seat . "</div>";
-            }
-            echo "</div>";
-        }
-        ?>
-    </div>
-    <br>
-    <button type="submit">Đặt vé</button>
-</form>
+                    <div class="form-group">
+                        <label>CCCD:</label>
+                        <input type="text" name="cccd" required>
+                    </div>
+                </div>
 
-<hr>
+                <input type="hidden" name="ghe_so" id="ghe_so_hidden">
 
-<h3><i class="fa-solid fa-ticket"></i> Vé bạn đã đặt</h3>
-<table>
-    <tr>
-        <th><i class="fa-solid fa-barcode"></i> Mã vé</th>
-        <th><i class="fa-solid fa-user"></i> Họ tên</th>
-        <th><i class="fa-solid fa-chair"></i> Ghế</th>
-        <th><i class="fa-solid fa-circle-info"></i> Trạng thái</th>
-        <th><i class="fa-solid fa-gears"></i> Hành động</th>
-    </tr>
-    <?php
-    if (isset($_SESSION['ten_nguoi_dung'])) {
-        $ten = $conn->real_escape_string($_SESSION['ten_nguoi_dung']);
-        $ves = $conn->query("SELECT * FROM ve WHERE chuyen_bay_id = $id AND ten_nguoi_dat = '$ten' ORDER BY id DESC");
+                <br>
+                <div id="seats" class="seats-grid">
+                    <?php
+                    // Sinh 80 ghế: A1-A6 ... N1-N6 (14 hàng x 6 ghế = 84), O1-O2 (2 ghế) => lấy 80 ghế đầu
+                    $rows = range('A', 'N'); // A-N: 14 hàng
+                    $cols = 6;
+                    $seat_count = 0;
+                    foreach ($rows as $r) {
+                        for ($i = 1; $i <= $cols; $i++) {
+                            $seat = $r . $i;
+                            if (++$seat_count > 80) break 2;
+                            $class = 'seat';
+                            $disabled = '';
+                            if (in_array($seat, $ghe_da_thanh_toan)) {
+                                $class .= ' paid';
+                                $disabled = 'data-disabled="1"';
+                            } elseif (in_array($seat, $ghe_da_dat)) {
+                                $class .= ' booked';
+                                $disabled = 'data-disabled="1"';
+                            }
+                            echo "<div class='$class' data-seat='$seat' title='$seat' $disabled>
+                                    <i class='fas fa-chair'></i>
+                                    <span class='seat-label'>$seat</span>
+                                  </div>";
+                        }
+                    }
+                    if ($seat_count < 80) {
+                        for ($i = 1; $i <= 2 && $seat_count < 80; $i++) {
+                            $seat = 'O' . $i;
+                            $class = 'seat';
+                            $disabled = '';
+                            if (in_array($seat, $ghe_da_thanh_toan)) {
+                                $class .= ' paid';
+                                $disabled = 'data-disabled="1"';
+                            } elseif (in_array($seat, $ghe_da_dat)) {
+                                $class .= ' booked';
+                                $disabled = 'data-disabled="1"';
+                            }
+                            echo "<div class='$class' data-seat='$seat' title='$seat' $disabled>
+                                    <i class='fas fa-chair'></i>
+                                    <span class='seat-label'>$seat</span>
+                                  </div>";
+                            $seat_count++;
+                        }
+                    }
+                    ?>
+                </div>
+                <br>
+                <button type="submit">Đặt vé</button>
+            </form>
 
-        if ($ves->num_rows === 0) {
-            echo "<tr><td colspan='5'><i class='fa-solid fa-magnifying-glass'></i> Bạn chưa đặt vé nào cho chuyến bay này.</td></tr>";
-        } else {
-            while ($ve = $ves->fetch_assoc()) {
-                $da_thanh_toan = $ve['trang_thai_thanh_toan'] == 1;
-                $tt = $da_thanh_toan
-                    ? "<span style='color:green;'><i class='fa-solid fa-check-circle'></i> Đã thanh toán</span>"
-                    : "<span style='color:red;'><i class='fa-solid fa-times-circle'></i> Chưa thanh toán</span>";
+            <hr>
 
-                echo "<tr>
+            <h3><i class="fa-solid fa-ticket"></i> Vé bạn đã đặt</h3>
+            <table>
+                <tr>
+                    <th><i class="fa-solid fa-barcode"></i> Mã vé</th>
+                    <th><i class="fa-solid fa-user"></i> Họ tên</th>
+                    <th><i class="fa-solid fa-chair"></i> Ghế</th>
+                    <th><i class="fa-solid fa-circle-info"></i> Trạng thái</th>
+                    <th><i class="fa-solid fa-gears"></i> Hành động</th>
+                </tr>
+                <?php
+                if (isset($_SESSION['ten_nguoi_dung'])) {
+                    $ten = $conn->real_escape_string($_SESSION['ten_nguoi_dung']);
+                    $ves = $conn->query("SELECT * FROM ve WHERE chuyen_bay_id = $id AND ten_nguoi_dat = '$ten' ORDER BY id DESC");
+
+                    if ($ves->num_rows === 0) {
+                        echo "<tr><td colspan='5'><i class='fa-solid fa-magnifying-glass'></i> Bạn chưa đặt vé nào cho chuyến bay này.</td></tr>";
+                    } else {
+                        while ($ve = $ves->fetch_assoc()) {
+                            $da_thanh_toan = $ve['trang_thai_thanh_toan'] == 1;
+                            $tt = $da_thanh_toan
+                                ? "<span style='color:green;'><i class='fa-solid fa-check-circle'></i> Đã thanh toán</span>"
+                                : "<span style='color:red;'><i class='fa-solid fa-times-circle'></i> Chưa thanh toán</span>";
+
+                            echo "<tr>
                     <td>{$ve['id']}</td>
                     <td>{$ve['ten_nguoi_dat']}</td>
                     <td>{$ve['ghe_so']}</td>
                     <td>$tt</td>
                     <td>";
 
-                if ($da_thanh_toan) {
-                    // Nếu đã thanh toán
-                    echo "
+                            if ($da_thanh_toan) {
+                                // Nếu đã thanh toán
+                                echo "
                         <i class='fa-solid fa-circle-check' style='color:green;'></i> Đã thanh toán<br>
                         <a href='hoa_don.php?id={$ve['id']}' target='_blank'>
                             <i class='fa-solid fa-receipt'></i> Hóa đơn
@@ -379,9 +489,9 @@ $conn->query("DELETE FROM ve
                             <i class='fa-solid fa-file-pdf'></i> In PDF
                         </a>
                     ";
-                } else {
-                    // Nếu chưa thanh toán
-                    echo "
+                            } else {
+                                // Nếu chưa thanh toán
+                                echo "
                         <form method='post' class='inline' style='margin-bottom: 5px;'>
                             <input type='hidden' name='ma_ve' value='{$ve['id']}'>
                             <select name='phuong_thuc' required>
@@ -394,60 +504,72 @@ $conn->query("DELETE FROM ve
                         </form>
                     ";
 
-                    // Nếu là Admin => Hiển thị nút xoá luôn
-                    if (isset($isAdmin) && $isAdmin) {
-                        echo "
+                                // Nếu là Admin => Hiển thị nút xoá luôn
+                                if (isset($isAdmin) && $isAdmin) {
+                                    echo "
                         <form method='post' style='display:inline;' onsubmit=\"return confirm('Admin xác nhận xoá vé này?');\">
                             <input type='hidden' name='xoa_ve' value='{$ve['id']}'>
                             <button class='btn btn-danger btn-sm'>
                                 <i class='fas fa-user-shield'></i> Xoá
                             </button>
                         </form>";
-                    } else {
-                        // Người dùng thường: chỉ xoá nếu chưa thanh toán
-                        echo "
+                                } else {
+                                    // Người dùng thường: chỉ xoá nếu chưa thanh toán
+                                    echo "
                         <form method='post' style='display:inline;' onsubmit=\"return confirm('Bạn có chắc muốn huỷ vé này?');\">
                             <input type='hidden' name='xoa_ve' value='{$ve['id']}'>
                             <button class='btn btn-warning btn-sm'>
                                 <i class='fas fa-ban'></i> Huỷ vé
                             </button>
                         </form>";
+                                }
+                            }
+
+                            echo "</td></tr>";
+                        }
                     }
+                } else {
+                    echo "<tr><td colspan='5'><i class='fa-solid fa-circle-info'></i> Vui lòng đặt vé trước để xem danh sách của bạn.</td></tr>";
                 }
-
-                echo "</td></tr>";
-            }
-        }
-    } else {
-        echo "<tr><td colspan='5'><i class='fa-solid fa-circle-info'></i> Vui lòng đặt vé trước để xem danh sách của bạn.</td></tr>";
-    }
-    ?>
-</table>
+                ?>
+            </table>
 
 
 
 
 
-<br><a href="index.php">← Quay lại danh sách</a>
+            <br><a href="index.php">← Quay lại danh sách</a>
 
-<script>
-    const seats = document.querySelectorAll('.seat:not(.booked)');
-    const gheHidden = document.getElementById('ghe_so_hidden');
-    seats.forEach(seat => {
-        seat.addEventListener('click', () => {
-            seats.forEach(s => s.classList.remove('selected'));
-            seat.classList.add('selected');
-            gheHidden.value = seat.dataset.seat;
-        });
-    });
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        if (gheHidden.value === '') {
-            alert('Vui lòng chọn ghế!');
-            e.preventDefault();
-        }
-    });
-</script>
+            <script>
+                // Cho phép chọn nhiều ghế, chỉ chọn ghế chưa đặt/chưa thanh toán
+                const seats = document.querySelectorAll('.seat');
+                const gheHidden = document.getElementById('ghe_so_hidden');
+                let selectedSeats = [];
 
-</div>
+                seats.forEach(seat => {
+                    // Không cho chọn ghế đã đặt hoặc đã thanh toán
+                    if (seat.dataset.disabled === "1") return;
+                    seat.addEventListener('click', () => {
+                        const seatCode = seat.dataset.seat;
+                        if (seat.classList.contains('selected')) {
+                            seat.classList.remove('selected');
+                            selectedSeats = selectedSeats.filter(s => s !== seatCode);
+                        } else {
+                            seat.classList.add('selected');
+                            selectedSeats.push(seatCode);
+                        }
+                        gheHidden.value = selectedSeats.join(',');
+                    });
+                });
+
+                document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                    if (selectedSeats.length === 0) {
+                        alert('Vui lòng chọn ít nhất một ghế!');
+                        e.preventDefault();
+                    }
+                });
+            </script>
+        </div>
 </body>
+
 </html>

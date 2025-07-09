@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../database/db.php'; 
+include '../database/db.php';
 require_once "session.php";
 checkLogin();
 
@@ -11,6 +11,7 @@ checkAdmin();
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>Quản lý chuyến bay</title>
@@ -30,7 +31,7 @@ checkAdmin();
             background: white;
             padding: 30px 40px;
             border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
         }
 
         h2 {
@@ -61,7 +62,8 @@ checkAdmin();
             margin-top: 10px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             text-align: center;
             border-bottom: 1px solid #dee2e6;
@@ -103,35 +105,49 @@ checkAdmin();
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <h2>📋 Danh sách chuyến bay</h2>
-    <a href="them.php" class="add-btn">➕ Thêm chuyến bay</a>
-    <table>
-        <tr>
-            <th>Mã CB</th><th>Điểm đi</th><th>Điểm đến</th><th>Giờ đi</th><th>Giờ đến</th>
-            <th>Hãng</th><th>Loại</th><th>Giá</th><th>Hành động</th>
-        </tr>
-        <?php
-        $result = $conn->query("SELECT * FROM chuyen_bay");
-        while ($row = $result->fetch_assoc()):
-        ?>
-        <tr>
-            <td><?= $row['ma_cb'] ?></td>
-            <td><?= $row['diem_di'] ?></td>
-            <td><?= $row['diem_den'] ?></td>
-            <td><?= $row['gio_di'] ?></td>
-            <td><?= $row['gio_den'] ?></td>
-            <td><?= $row['hang_hang_khong'] ?></td>
-            <td><?= $row['loai_may_bay'] ?></td>
-            <td><?= number_format($row['gia'], 0, ',', '.') ?> đ</td>
-            <td>
-                <a href="sua.php?id=<?= $row['id'] ?>" class="btn edit">✏️</a>
-                <a href="xoa.php?id=<?= $row['id'] ?>" class="btn delete" onclick="return confirm('Xoá chuyến bay này?')">🗑️</a>
-            </td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
-</div>
+    <div class="container">
+        <h2>📋 Danh sách chuyến bay</h2>
+        <a href="them.php" class="add-btn">➕ Thêm chuyến bay</a>
+        <a href="quanlyve.php" class="add-btn" style="background:#007bff; margin-left:10px;">🎫 Quản lý vé</a>
+        <a href="thongke.php" class="add-btn" style="background:#ff9800; margin-left:10px;">📊 Thống kê doanh thu</a>
+        <table>
+            <tr>
+                <th>Mã CB</th>
+                <th>Điểm đi</th>
+                <th>Điểm đến</th>
+                <th>Giờ đi</th>
+                <th>Giờ đến</th>
+                <th>Hãng</th>
+                <th>Loại</th>
+                <th>Giá</th>
+                <th>Hành động</th>
+            </tr>
+            <?php
+            $result = $conn->query("SELECT * FROM chuyen_bay");
+            while ($row = $result->fetch_assoc()):
+            ?>
+                <tr>
+                    <td><?= $row['ma_cb'] ?></td>
+                    <td><?= $row['diem_di'] ?></td>
+                    <td><?= $row['diem_den'] ?></td>
+                    <td><?= $row['gio_di'] ?></td>
+                    <td><?= $row['gio_den'] ?></td>
+                    <td><?= $row['hang_hang_khong'] ?></td>
+                    <td><?= $row['loai_may_bay'] ?></td>
+                    <td><?= number_format($row['gia'], 0, ',', '.') ?> đ</td>
+                    <td>
+                        <a href="sua.php?id=<?= $row['id'] ?>" class="btn edit">✏️</a>
+                        <a href="xoa.php?id=<?= $row['id'] ?>" class="btn delete" onclick="return confirm('Xoá chuyến bay này?')">🗑️</a>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    </div>
+    <div style="text-align:center; margin-top:24px;">
+        <a href="../index.php" style="color:#0077cc; text-decoration:underline; font-weight:bold;">← Về trang sản phẩm</a>
+    </div>
 </body>
+
 </html>
