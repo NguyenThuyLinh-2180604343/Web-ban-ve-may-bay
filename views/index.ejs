@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking System</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/css/voice-ui.css">
+</head>
+
+<body>
+    <%- include('partials/header') %>
+
+        <section class="home" id="home">
+            <div class="image-slider"
+                style="position:relative; width:100%; max-width:1200px; height:600px; margin:0 auto; overflow:hidden; border-radius:16px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                <img src="/image/B95AFAA3-B1F5-4C6F-AC8D-A558F9FCF859.jpeg" alt="Slide 1" class="slide-img"
+                    style="width:100%; height:600px; object-fit:cover; display:block;">
+                <img src="/image/1.webp" alt="Slide 2" class="slide-img"
+                    style="width:100%; height:600px; object-fit:cover; display:none;">
+                <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&h=600&fit=crop"
+                    alt="Slide 3" class="slide-img" style="width:100%; height:600px; object-fit:cover; display:none;">
+
+                <!-- Overlay với text -->
+                <div
+                    style="position:absolute; top:0; left:0; right:0; bottom:0; background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.1)); display:flex; align-items:center; justify-content:center; color:white; text-align:center;">
+                    <div>
+                        <h1 style="font-size:3.5em; margin-bottom:20px; text-shadow:2px 2px 4px rgba(0,0,0,0.5);">Khám
+                            Phá Thế Giới</h1>
+                        <p style="font-size:1.3em; margin-bottom:30px; text-shadow:1px 1px 2px rgba(0,0,0,0.5);">Đặt vé
+                            máy bay dễ dàng, giá tốt nhất</p>
+                        <a href="#book"
+                            style="background:#0077cc; color:white; padding:15px 30px; border-radius:25px; text-decoration:none; font-weight:bold; font-size:1.1em; box-shadow:0 4px 15px rgba(0,119,204,0.3); transition:all 0.3s;">Đặt
+                            Vé Ngay</a>
+                    </div>
+                </div>
+
+                <!-- Navigation dots -->
+                <div
+                    style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:10px;">
+                    <span class="slider-dot" data-slide="0"
+                        style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer; transition:all 0.3s;"></span>
+                    <span class="slider-dot" data-slide="1"
+                        style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer; transition:all 0.3s;"></span>
+                    <span class="slider-dot" data-slide="2"
+                        style="width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer; transition:all 0.3s;"></span>
+                </div>
+            </div>
+
+            <script>
+                const slides = document.querySelectorAll('.slide-img');
+                const dots = document.querySelectorAll('.slider-dot');
+                let current = 0;
+
+                function showSlide(idx) {
+                    slides.forEach((img, i) => {
+                        img.style.display = i === idx ? 'block' : 'none';
+                    });
+                    dots.forEach((dot, i) => {
+                        dot.style.background = i === idx ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)';
+                    });
+                    current = idx;
+                }
+
+                // Auto slide
+                setInterval(() => {
+                    showSlide((current + 1) % slides.length);
+                }, 4000);
+
+                // Dot navigation
+                dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => showSlide(index));
+                });
+
+                showSlide(0);
+            </script>
+        </section>
+
+        <section class="book" id="book" style="padding:60px 20px;">
+            <style>
+                @media (max-width: 768px) {
+                    .book .row {
+                        flex-direction: column !important;
+                        gap: 30px !important;
+                    }
+
+                    .book form {
+                        min-width: 100% !important;
+                        max-width: 100% !important;
+                    }
+
+                    .book form>div:first-child {
+                        grid-template-columns: 1fr !important;
+                        gap: 15px !important;
+                    }
+
+                    .book .image {
+                        min-width: 100% !important;
+                        max-width: 100% !important;
+                    }
+
+                    .book .image img {
+                        height: 250px !important;
+                    }
+
+                }
+            </style>
+            <h1 class="heading"
+                style="background:#e3f2fd; color:#222; letter-spacing:2px; font-size:2.2em; text-align:center; margin-bottom:24px; border-radius:10px; padding:12px 0;">
+                <span style="color:#222; background:none;">b</span>
+                <span style="color:#222; background:none;">o</span>
+                <span style="color:#222; background:none;">o</span>
+                <span style="color:#222; background:none;">k</span>
+                <span class="space" style="background:none;"></span>
+                <span style="color:#222; background:none;">n</span>
+                <span style="color:#222; background:none;">o</span>
+                <span style="color:#222; background:none;">w</span>
+            </h1>
+
+            <div class="row"
+                style="display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:40px; max-width:1200px; margin:0 auto;">
+                <div class="image" style="flex:1 1 400px; min-width:350px; max-width:450px; text-align:center;">
+                    <img src="/image/1.webp" alt=""
+                        style="width:100%; height:350px; object-fit:cover; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                </div>
+
+                <form action="/showticket" method="get"
+                    style="flex:1 1 500px; min-width:400px; background:#fff; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1); padding:30px; font-size:1em;">
+                    <!-- Row 1: From and To -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:25px;">
+                        <div class="inputBox">
+                            <h3 style="color:#333; font-size:1.1em; margin-bottom:8px; font-weight:600;">From</h3>
+                            <input type="text" name="diem_di" placeholder="Enter departure"
+                                style="padding:12px 16px; border:1px solid #ddd; border-radius:6px; font-size:1em; color:#333; width:100%; box-sizing:border-box; transition:border-color 0.3s;"
+                                onfocus="this.style.borderColor='#0077cc'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                        <div class="inputBox">
+                            <h3 style="color:#333; font-size:1.1em; margin-bottom:8px; font-weight:600;">To</h3>
+                            <input type="text" name="diem_den" placeholder="Enter destination"
+                                style="padding:12px 16px; border:1px solid #ddd; border-radius:6px; font-size:1em; color:#333; width:100%; box-sizing:border-box; transition:border-color 0.3s;"
+                                onfocus="this.style.borderColor='#0077cc'" onblur="this.style.borderColor='#ddd'">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Date -->
+                    <div class="inputBox" style="margin-bottom:25px;">
+                        <h3 style="color:#333; font-size:1.1em; margin-bottom:8px; font-weight:600;">Departure date</h3>
+                        <input type="date" name="ngay_di"
+                            style="padding:12px 16px; border:1px solid #ddd; border-radius:6px; font-size:1em; color:#333; width:100%; box-sizing:border-box; transition:border-color 0.3s;"
+                            onfocus="this.style.borderColor='#0077cc'" onblur="this.style.borderColor='#ddd'">
+                    </div>
+
+
+
+                    <!-- Submit Button -->
+                    <input type="submit" class="btn" value="Search flights"
+                        style="background:#0077cc; color:#fff; border:none; border-radius:6px; padding:14px 0; font-size:1.1em; font-weight:bold; cursor:pointer; width:100%; transition:background 0.3s;"
+                        onmouseenter="this.style.background='#005fa3'" onmouseleave="this.style.background='#0077cc'">
+                </form>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" style="padding:80px 20px; background:#f8f9fa;">
+            <div style="max-width:1200px; margin:0 auto; text-align:center;">
+                <h2 style="font-size:2.5em; margin-bottom:20px; color:#333;">Tại Sao Chọn Chúng Tôi?</h2>
+                <p style="font-size:1.2em; color:#666; margin-bottom:60px;">Trải nghiệm đặt vé máy bay tuyệt vời nhất
+                </p>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:40px;">
+                    <div class="feature-card"
+                        style="background:white; padding:40px 30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1); transition:transform 0.3s;">
+                        <div
+                            style="width:80px; height:80px; background:linear-gradient(135deg, #0077cc, #64b5f6); border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-search" style="font-size:35px; color:white;"></i>
+                        </div>
+                        <h3 style="font-size:1.5em; margin-bottom:15px; color:#333;">Tìm Kiếm Thông Minh</h3>
+                        <p style="color:#666; line-height:1.6;">So sánh giá từ nhiều hãng hàng không, tìm vé rẻ nhất
+                            trong vài giây</p>
+                    </div>
+
+                    <div class="feature-card"
+                        style="background:white; padding:40px 30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1); transition:transform 0.3s;">
+                        <div
+                            style="width:80px; height:80px; background:linear-gradient(135deg, #28a745, #20c997); border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-shield-alt" style="font-size:35px; color:white;"></i>
+                        </div>
+                        <h3 style="font-size:1.5em; margin-bottom:15px; color:#333;">Bảo Mật Tuyệt Đối</h3>
+                        <p style="color:#666; line-height:1.6;">Thông tin cá nhân và thanh toán được bảo vệ với công
+                            nghệ mã hóa cao cấp</p>
+                    </div>
+
+                    <div class="feature-card"
+                        style="background:white; padding:40px 30px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1); transition:transform 0.3s;">
+                        <div
+                            style="width:80px; height:80px; background:linear-gradient(135deg, #ffc107, #ff8f00); border-radius:50%; margin:0 auto 25px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-headset" style="font-size:35px; color:white;"></i>
+                        </div>
+                        <h3 style="font-size:1.5em; margin-bottom:15px; color:#333;">Hỗ Trợ 24/7</h3>
+                        <p style="color:#666; line-height:1.6;">Đội ngũ chăm sóc khách hàng chuyên nghiệp, sẵn sàng hỗ
+                            trợ mọi lúc</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <%- include('partials/footer') %>
+
+            <script>
+                // Search functionality
+                document.getElementById('search-btn').addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    const searchForm = document.querySelector('.search-bar-container');
+                    if (searchForm) {
+                        searchForm.style.display = (searchForm.style.display === 'none' || searchForm.style.display === '') ? 'block' : 'none';
+                        if (searchForm.style.display === 'block') {
+                            document.getElementById('search-bar').focus();
+                        }
+                    }
+                });
+
+                document.addEventListener('click', function (event) {
+                    const searchForm = document.querySelector('.search-bar-container');
+                    const searchBtn = document.getElementById('search-btn');
+                    if (searchForm && !searchForm.contains(event.target) && event.target !== searchBtn) {
+                        searchForm.style.display = 'none';
+                    }
+                });
+
+                // Chatbot functionality
+                const chatbotHeader = document.getElementById('chatbot-header');
+                const chatbotBody = document.getElementById('chatbot-body');
+                const chatbotForm = document.getElementById('chatbot-form');
+                const chatbotInput = document.getElementById('chatbot-input');
+                const chatbotMessages = document.getElementById('chatbot-messages');
+
+                if (chatbotHeader && chatbotBody) {
+                    chatbotHeader.onclick = function () {
+                        chatbotBody.style.display = (chatbotBody.style.display === 'none' || chatbotBody.style.display === '') ? 'block' : 'none';
+                    };
+                }
+
+                if (chatbotForm && chatbotInput && chatbotMessages) {
+                    chatbotForm.onsubmit = function (e) {
+                        e.preventDefault();
+                        const msg = chatbotInput.value.trim();
+                        if (!msg) return;
+
+                        // Add user message
+                        chatbotMessages.innerHTML += '<div style="margin-bottom:8px; padding:8px; background:#f0f0f0; border-radius:8px;"><b>You:</b> ' + msg + '</div>';
+
+                        // Bot responses
+                        let reply = "Xin lỗi, tôi chưa hiểu câu hỏi của bạn. Bạn có thể hỏi về vé máy bay, giá cả, hoặc đặt vé.";
+
+                        if (/hello|hi|chào|xin chào/i.test(msg)) {
+                            reply = "Xin chào! Tôi có thể giúp bạn tìm kiếm chuyến bay. Bạn cần hỗ trợ gì?";
+                        } else if (/vé|ticket|đặt vé/i.test(msg)) {
+                            reply = "Bạn muốn đặt vé máy bay đi đâu? Tôi có thể giúp bạn tìm kiếm chuyến bay phù hợp.";
+                        } else if (/giá|price|cost|bao nhiêu/i.test(msg)) {
+                            reply = "Giá vé phụ thuộc vào tuyến bay và thời gian. Bạn có thể sử dụng form tìm kiếm để xem giá cụ thể.";
+                        } else if (/help|giúp|hỗ trợ/i.test(msg)) {
+                            reply = "Tôi có thể giúp bạn: 🔍 Tìm chuyến bay, ✈️ Đặt vé, 💰 Kiểm tra giá vé, 📋 Xem lịch sử đặt vé.";
+                        } else if (/hà nội|hanoi|hn/i.test(msg)) {
+                            reply = "Bạn muốn tìm chuyến bay từ/đến Hà Nội? Hãy sử dụng form tìm kiếm phía trên để xem các chuyến bay có sẵn.";
+                        } else if (/sài gòn|hcm|tp\.hcm|ho chi minh/i.test(msg)) {
+                            reply = "Bạn quan tâm đến chuyến bay từ/đến TP.HCM? Tôi khuyên bạn nên đặt vé sớm để có giá tốt nhất.";
+                        } else if (/đà nẵng|da nang/i.test(msg)) {
+                            reply = "Đà Nẵng là điểm đến tuyệt vời! Bạn có thể tìm nhiều chuyến bay đến Đà Nẵng với giá hợp lý.";
+                        }
+
+                        // Add bot response with delay
+                        setTimeout(() => {
+                            chatbotMessages.innerHTML += '<div style="margin-bottom:10px; padding:8px; background:#e3f2fd; border-radius:8px; color:#1976d2;"><b>🤖 Bot:</b> ' + reply + '</div>';
+                            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+                        }, 800);
+
+                        chatbotInput.value = '';
+                        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+                    };
+                }
+
+                // Add hover effects for cards
+                document.querySelectorAll('.feature-card').forEach(card => {
+                    card.addEventListener('mouseenter', function () {
+                        this.style.transform = 'translateY(-10px)';
+                    });
+                    card.addEventListener('mouseleave', function () {
+                        this.style.transform = 'translateY(0)';
+                    });
+                });
+
+
+            </script>
+            <script src="/js/voice-ui.js"></script>
+</body>
+
+</html>

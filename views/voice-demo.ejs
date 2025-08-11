@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice UI Demo - Flight Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/css/voice-ui.css">
+    <style>
+        .demo-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .demo-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+        
+        .demo-examples {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .example-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1><i class="fas fa-microphone"></i> Voice UI Demo</h1>
+            <p>Test Voice Search functionality for Flight Booking System</p>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎤 Voice Search Form</h3>
+            <form action="/showticket" method="get">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                    <div>
+                        <label>From:</label>
+                        <input type="text" name="diem_di" placeholder="Enter departure">
+                    </div>
+                    <div>
+                        <label>To:</label>
+                        <input type="text" name="diem_den" placeholder="Enter destination">
+                    </div>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>Date:</label>
+                    <input type="date" name="ngay_di">
+                </div>
+                <input type="submit" value="Search Flights" style="background:#007bff; color:white; border:none; padding:12px 24px; border-radius:5px; cursor:pointer; width:100%;">
+            </form>
+        </div>
+
+        <div class="demo-section">
+            <h3>💬 Voice Chat</h3>
+            <div id="chatbot-messages" style="height:200px; overflow-y:auto; border:1px solid #ddd; padding:15px; margin-bottom:15px; background:#f9f9f9;">
+                <div style="padding:8px; background:#e3f2fd; border-radius:8px; color:#1976d2;">
+                    <b>🤖 Bot:</b> Xin chào! Hãy thử voice chat với tôi!
+                </div>
+            </div>
+            <form id="chatbot-form" style="display:flex; gap:8px;">
+                <input type="text" id="chatbot-input" placeholder="Type or use voice..." style="flex:1; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                <button type="submit" style="background:#007bff; color:white; border:none; padding:10px 20px; border-radius:5px;">Send</button>
+                <!-- Voice button will be added here by voice-ui.js -->
+            </form>
+        </div>
+
+        <div class="demo-examples">
+            <h3>📝 Voice Commands Examples</h3>
+            <div class="example-item">
+                <strong>Flight Search:</strong> "Tìm vé từ Hà Nội đi Sài Gòn"
+            </div>
+            <div class="example-item">
+                <strong>Price Check:</strong> "Giá vé đi Đà Nẵng"
+            </div>
+            <div class="example-item">
+                <strong>Date Specific:</strong> "Vé bay từ TP.HCM đi Phú Quốc ngày 15/2"
+            </div>
+            <div class="example-item">
+                <strong>General:</strong> "Chào", "Help", "Cảm ơn"
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>⌨️ Keyboard Shortcuts</h3>
+            <ul>
+                <li><kbd>Escape</kbd> - Stop voice recognition</li>
+            </ul>
+            <p><strong>Note:</strong> Voice search is only available in chatbot, not in main search form.</p>
+        </div>
+
+        <div style="text-align:center; margin-top:30px;">
+            <a href="/" style="color:#007bff; text-decoration:none;">← Back to Home</a>
+        </div>
+    </div>
+
+    <script src="/js/voice-ui.js"></script>
+    <script>
+        // Simple chatbot for demo
+        document.getElementById('chatbot-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatbot-input');
+            const messages = document.getElementById('chatbot-messages');
+            
+            if (input.value.trim()) {
+                messages.innerHTML += `
+                    <div style="margin:10px 0; padding:8px; background:#f0f0f0; border-radius:8px;">
+                        <b>You:</b> ${input.value}
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    messages.innerHTML += `
+                        <div style="margin:10px 0; padding:8px; background:#e3f2fd; border-radius:8px; color:#1976d2;">
+                            <b>🤖 Bot:</b> Tôi đã nhận được: "${input.value}". Hãy thử voice chat!
+                        </div>
+                    `;
+                    messages.scrollTop = messages.scrollHeight;
+                }, 500);
+                
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>

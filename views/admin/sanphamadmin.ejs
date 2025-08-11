@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý chuyến bay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077cc, #64b5f6);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background: #0077cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #005fa3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .flights-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0077cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="/admin" class="back-link">← Quay lại Dashboard</a>
+
+        <div class="header">
+            <h1><i class="fas fa-plane"></i> Quản lý chuyến bay</h1>
+            <button class="btn btn-success" onclick="openAddModal()">
+                <i class="fas fa-plus"></i> Thêm chuyến bay
+            </button>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Tìm kiếm chuyến bay..." onkeyup="searchFlights()">
+        </div>
+
+        <div class="flights-table">
+            <table class="table" id="flights-table">
+                <thead>
+                    <tr>
+                        <th>Mã CB</th>
+                        <th>Tuyến bay</th>
+                        <th>Ngày bay</th>
+                        <th>Giờ bay</th>
+                        <th>Hãng</th>
+                        <th>Giá</th>
+                        <th>Ghế</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% flights.forEach(flight => { %>
+                        <tr>
+                            <td>
+                                <%= flight.ma_cb %>
+                            </td>
+                            <td>
+                                <%= flight.diem_di %> → <%= flight.diem_den %>
+                            </td>
+                            <td>
+                                <%= new Date(flight.ngay_di).toLocaleDateString('vi-VN') %>
+                            </td>
+                            <td>
+                                <%= flight.gio_di %> - <%= flight.gio_den %>
+                            </td>
+                            <td>
+                                <%= flight.hang_hang_khong %>
+                            </td>
+                            <td>
+                                <%= new Intl.NumberFormat('vi-VN').format(flight.gia) %>đ
+                            </td>
+                            <td>
+                                <%= flight.tong_ghe %>
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" onclick="deleteFlight(<%= flight.id %>)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Flight Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddModal()">&times;</span>
+            <h2><i class="fas fa-plus"></i> Thêm chuyến bay mới</h2>
+
+            <form id="add-flight-form">
+                <div class="form-group">
+                    <label for="ma_cb">Mã chuyến bay:</label>
+                    <input type="text" id="ma_cb" name="ma_cb" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="diem_di">Điểm đi:</label>
+                    <input type="text" id="diem_di" name="diem_di" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="diem_den">Điểm đến:</label>
+                    <input type="text" id="diem_den" name="diem_den" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ngay_di">Ngày bay:</label>
+                    <input type="date" id="ngay_di" name="ngay_di" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gio_di">Giờ cất cánh:</label>
+                    <input type="time" id="gio_di" name="gio_di" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gio_den">Giờ hạ cánh:</label>
+                    <input type="time" id="gio_den" name="gio_den" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="hang_hang_khong">Hãng hàng không:</label>
+                    <select id="hang_hang_khong" name="hang_hang_khong" required>
+                        <option value="">Chọn hãng</option>
+                        <option value="Vietnam Airlines">Vietnam Airlines</option>
+                        <option value="VietJet Air">VietJet Air</option>
+                        <option value="Jetstar">Jetstar</option>
+                        <option value="Bamboo Airways">Bamboo Airways</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="loai_may_bay">Loại máy bay:</label>
+                    <input type="text" id="loai_may_bay" name="loai_may_bay" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gia">Giá vé (VNĐ):</label>
+                    <input type="number" id="gia" name="gia" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tong_ghe">Tổng số ghế:</label>
+                    <input type="number" id="tong_ghe" name="tong_ghe" value="60" required>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Lưu chuyến bay
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('add-flight-form').reset();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById('addModal');
+            if (event.target == modal) {
+                closeAddModal();
+            }
+        }
+
+        // Add flight form submission
+        document.getElementById('add-flight-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/admin/add-flight', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    closeAddModal();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+            }
+        });
+
+        // Delete flight
+        async function deleteFlight(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa chuyến bay này?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/delete-flight/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+            }
+        }
+
+        // Search flights
+        function searchFlights() {
+            const input = document.getElementById('search-input');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('flights-table');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        const txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                tr[i].style.display = found ? '' : 'none';
+            }
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="message ${type}">${message}</div>`;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Set minimum date to today
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('ngay_di').setAttribute('min', today);
+        });
+    </script>
+
+</body>
+
+</html>
